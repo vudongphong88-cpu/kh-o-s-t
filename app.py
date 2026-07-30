@@ -1,67 +1,71 @@
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import os
 
-st.set_page_config(page_title="Khảo sát bạn bè", page_icon="📝")
-DATA_FILE = "ket_qua_khao_sat.xlsx"
+st.set_page_config(page_title="Khảo sát người dùng", page_icon="📝")
 
-def luu_du_lieu(data_moi):
-    if os.path.exists(DATA_FILE):
-        df_cu = pd.read_excel(DATA_FILE)
-        df_moi = pd.concat([df_cu, pd.DataFrame([data_moi])], ignore_index=True)
-    else:
-        df_moi = pd.DataFrame([data_moi])
-    df_moi.to_excel(DATA_FILE, index=False)
+# DÁN ĐƯỜNG LINK GOOGLE SHEETS CỦA BẠN VÀO GIỮA HAI DẤU NGOẶC KÉP Ở DÒNG DƯỚI ĐÂY:
+URL_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1Tid-kaoP-g36d3mdCtJqRpp_miaNLfHD5syZSqyfjwk/edit?usp=sharing"
+
+try:
+    conn = st.connection("gsheets", type=GSheetsConnection)
+except Exception:
+    conn = None
 
 st.title("📋 BIỂU MẪU KHẢO SÁT SỞ THÍCH BẠN BÈ")
 
+# Giao diện Form nhập liệu
 with st.form(key="survey_form", clear_on_submit=True):
     ho_ten = st.text_input("1. Họ và tên của bạn là gì? *")
-    gioi_tinh = st.radio("2. Giới tính của bạn:", ["Nam", "Nữ", "Khác"])
-    ngay_sinh = st.text_input("3. Ngày sinh theo lịch dương của bạn là ngày nào? *")
-    ngay_sinhh = st.text_input("4. Ngày sinh theo lịch âm của bạn là ngày nào? *")
-    do_an_yeu_thich = st.text_input("5. Đồ ăn yêu thích của bạn là gì? *")
-    so_thich = st.text_input("6. Sở thích của bạn là gì? *")
-    mau_sac = st.text_input("7. Màu sắc yêu thích của bạn là gì? *")
+    ngay_sinh = st.text_input("2. Ngày sinh dương lịch của bạn là gì? *")
+    gioi_tinh = st.radio("3. Giới tính của bạn:", ["Nam", "Nữ", "Khác"])
+    ngay_sinhh = st.text_input("4. Ngày sinh theo âm lịch của bạn là gì? *")
+    mau_sac_yeu_thich = st.text_area("5. màu sắc yêu thích của bạn là gì:")
+    do_an_yeu_thich = st.text_input("6. Đồ ăn yêu thích của bạn là gì? *")
+    so_thich = st.text_input("7. Sở thích của bạn là gì? *")
     nut_gui = st.form_submit_button(label="Gửi khảo sát")
 
 if nut_gui:
     if not ho_ten.strip() or not email.strip():
         st.error("❌ Vui lòng điền đầy đủ Họ tên và Email!")
     else:
-        thong_tin_nguoi_dung = {
-            "Họ và tên": ho_ten, "Giới tính": gioi_tinh, "Ngày sinh dương lịch": ngay_sinh, "Ngày sinh âm lịch": ngay_sinhh, "Đồ ăn yêu thích": do_an_yeu_thich, "Sở thích": so_thich
-        }
-        luu_du_lieu(thong_tin_nguoi_dung)
-        st.success("🎉 Cảm ơn bạn! Thông tin khảo sát đã được lưu vào file Excel thành công.")
+        # Gom dữ liệu người dùng vừa nhập vào một bảng tạm
+        data_moi = pd.DataFrame([{
+            "Họ và tên": ho_ten,
+            "Ngày sinh dương lịch": ngay_sinh,
+            "Giới tính": gioi_tinh,
+            "Ngày sinh âm lịch": ngay_sinhh,
+            "Màu sắc yêu thích": mau_sac_yeu_thich,
+            "Đồ ăn yêu thích": do_an_yeu_thich,
+            "Sở thích": so_thich
+        }])
+        
+        try:
+            # Đọc dữ liệu cũ đang có trên Google Sheets
+            df_cu = conn.read(spreadsheet=URL_GOOGLE_SHEETS, ttl=0)
+            # Gộp dữ liệu cũ và dữ liệu mới lại với nhau
+            df_cap_nhat = pd.concat([df_cu, data_moi], ignore_index=True)
+            # Ghi đè bảng dữ liệu mới ngược trở lại Google Sheets vĩnh viễn
+            conn.update(spreadsheet=URL_GOOGLE_SHEETS, data=df_cap_nhat)
+            st.success("🎉 Cảm ơn bạn! Thông tin khảo sát đã được lưu vĩnh viễn vào Google Sheets.")
+        except Exception as e:
+            st.error(f"❌ Lỗi kết nối Google Sheets: {e}. Vui lòng kiểm tra lại quyền chỉnh sửa của link.")
+
 # --- PHẦN BẢO MẬT: TRANG QUẢN TRỊ DÀNH RIÊNG CHO BẠN ---
 st.write("---")
 st.subheader("🔐 ĐĂNG NHẬP TRANG QUẢN TRỊ (CHỈ DÀNH CHO ADMIN)")
 
-# Tạo ô nhập mật khẩu
 mat_khau_nhap = st.text_input("Nhập mật khẩu để xem dữ liệu:", type="password")
+MAT_KHAU_CHUAN = "2010" # Bạn có thể đổi mật khẩu này theo ý muốn
 
-# BẠN CÓ THỂ ĐỔI MẬT KHẨU TẠI ĐÂY (Thay chữ 'phong123' bằng mật khẩu bạn muốn)
-MAT_KHAU_CHUAN = "2010"
-
-# Nếu nhập đúng mật khẩu mới hiển thị bảng dữ liệu và nút tải file
 if mat_khau_nhap == MAT_KHAU_CHUAN:
     st.success("🔓 Đăng nhập thành công!")
-    st.subheader("📊 DANH SÁCH KẾT QUẢ KHẢO SÁT")
-    
-    if os.path.exists(DATA_FILE):
-        df_ket_qua = pd.read_excel(DATA_FILE)
-        st.dataframe(df_ket_qua) # Hiện bảng dữ liệu
-        
-        # Nút tải file Excel
-        with open(DATA_FILE, "rb") as file:
-            st.download_button(
-                label="📥 Tải file Excel kết quả về máy",
-                data=file,
-                file_name="ket_qua_khao_sat_moi_nhat.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-    else:
-        st.info("Hiện tại chưa có ai điền khảo sát trên hệ thống Cloud.")
+    st.subheader("📊 DANH SÁCH KẾT QUẢ KHẢO SÁT TRÊN GOOGLE SHEETS")
+    try:
+        df_hien_thi = conn.read(spreadsheet=URL_GOOGLE_SHEETS, ttl=0)
+        st.dataframe(df_hien_thi)
+    except Exception:
+        st.info("Chưa có dữ liệu hoặc không thể tải bảng trực tiếp. Bạn hãy xem trực tiếp trên ứng dụng Google Sheets nhé.")
 elif mat_khau_nhap != "":
     st.error("❌ Mật khẩu không chính xác. Vui lòng thử lại!")
