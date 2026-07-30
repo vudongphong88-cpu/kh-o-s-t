@@ -27,8 +27,8 @@ with st.form(key="survey_form", clear_on_submit=True):
     nut_gui = st.form_submit_button(label="Gửi khảo sát")
 
 if nut_gui:
-    if not ho_ten.strip() or not email.strip():
-        st.error("❌ Vui lòng điền đầy đủ Họ tên và Email!")
+    if not ho_ten.strip() or not ngay_sinh.strip():
+        st.error("❌ Vui lòng điền đầy đủ Họ tên và Ngày sinh dương lịch!")
     else:
         # Gom dữ liệu người dùng vừa nhập vào một bảng tạm
         data_moi = pd.DataFrame([{
