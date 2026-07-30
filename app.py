@@ -4,8 +4,10 @@ import requests
 
 st.set_page_config(page_title="Khảo sát người dùng", page_icon="📝")
 
-# --- THÔNG TIN KẾT NỐI GOOGLE FORM API ---
-FORM_ID = "1FAIpQLSfVQ4EObiUKy3hnWMDE57vSAqSfEc3f9ElHwp2YKhl232c2Qw" 
+# --- 1. THÔNG TIN ĐÃ ĐƯỢC LÀM SẠCH TUYỆT ĐỐI ---
+RAW_ID = "1FAIpQLSfVQ4EObiUKy3hnWMDE57vSAqSfEc3f9ElHwp2YKhl232c2Qw"
+# Lệnh loại bỏ hoàn toàn các ký tự lạ, dấu cách hoặc gạch chéo nếu lỡ tay copy thừa
+FORM_ID = RAW_ID.strip().replace("/", "")
 
 ENTRY_HO_TEN = "entry.1930741903"
 ENTRY_NGAY_SINH_DUONG = "entry.976728289"
@@ -15,30 +17,9 @@ ENTRY_MAU_SAC = "entry.858748151"
 ENTRY_DO_AN = "entry.1376030974"
 ENTRY_SO_THICH = "entry.1853722381"
 
-# --- LINK FILE GOOGLE SHEETS XEM BẢNG KẾT QUẢ ---
-URL_XEM_GOOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1mjA6VOLozbxsuoB6Petrqfbm7Qc5c_9INiy_JcQJTfg/edit?usp=sharing"
+URL_XEM_GOOOGLE_SHEETS = "https://google.com"
 
-# --- CẤU HÌNH GIAO DIỆN ĐẸP MẮT ---
-st.markdown("""
-    <style>
-    .stApp { background-color: #F0F2F6; }
-    .stForm {
-        background-color: #FFFFFF;
-        padding: 30px !important;
-        border-radius: 12px !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
-    }
-    button[kind="formSubmit"] {
-        background-color: #4CAF50 !important;
-        color: white !important;
-        font-weight: bold !important;
-        border-radius: 6px !important;
-        width: 100% !important;
-    }
-    button[kind="formSubmit"]:hover { background-color: #45a049 !important; }
-    </style>
-""", unsafe_allow_html=True)
-
+# --- 2. GIAO DIỆN FORM KHẢO SÁT ---
 st.title("📋 BIỂU MẪU KHẢO SÁT SỞ THÍCH BẠN BÈ")
 
 with st.form(key="survey_form", clear_on_submit=True):
@@ -55,8 +36,8 @@ if nut_gui:
     if not ho_ten.strip() or not ngay_sinh.strip():
         st.error("❌ Vui lòng điền đầy đủ Họ tên và Ngày sinh dương lịch!")
     else:
-        # ĐÃ SỬA: Đường dẫn API chuẩn xác kết nối đến Google Form
-        form_url = f"https://google.com{FORM_ID}/formResponse"
+        # Sử dụng đường dẫn tĩnh hoàn toàn, tách biệt 100% không cho dính chữ
+        form_url = "https://google.com" + str(FORM_ID) + "/formResponse"
         
         payload = {
             ENTRY_HO_TEN: ho_ten,
@@ -72,9 +53,9 @@ if nut_gui:
             response = requests.post(form_url, data=payload)
             st.success("🎉 Cảm ơn bạn! Thông tin khảo sát đã được gửi đi thành công.")
         except Exception as e:
-            st.error(f"❌ Không thể kết nối mạng: {e}")
+            st.error(f"❌ Lỗi mạng hệ thống: {e}")
 
-# --- PHẦN BẢO MẬT: TRANG QUẢN TRỊ DÀNH RIÊNG CHO BẠN ---
+# --- 3. TRANG QUẢN TRỊ ADMIN ---
 st.write("---")
 st.subheader("🔐 ĐĂNG NHẬP TRANG QUẢN TRỊ (CHỈ DÀNH CHO ADMIN)")
 
@@ -83,6 +64,7 @@ MAT_KHAU_CHUAN = "20082010"
 
 if mat_khau_nhap == MAT_KHAU_CHUAN:
     st.success("🔓 Đăng nhập thành công!")
-    st.markdown(f"👉 [Bấm vào đây để xem và quản lý file Excel câu trả lời trên Google Sheets]({URL_XEM_GOOOGLE_SHEETS})")
+    st.markdown(f"👉 [Bấm vào đây để xem file Excel câu trả lời trên Google Sheets]({URL_XEM_GOOOGLE_SHEETS})")
 elif mat_khau_nhap != "":
-    st.error("❌ Mật khẩu không chính xác. Vui lòng thử lại!") 
+    st.error("❌ Mật khẩu không chính xác. Vui lòng thử lại!")
+
