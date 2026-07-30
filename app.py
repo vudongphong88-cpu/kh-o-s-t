@@ -42,7 +42,7 @@ if nut_gui:
             df_cap_nhat = pd.concat([df_cu, data_moi], ignore_index=True)
             conn.update(data=df_cap_nhat)
             st.success("🎉 Cảm ơn bạn! Thông tin khảo sát đã được lưu vĩnh viễn vào Google Sheets.")
-        except Exception as e:
+    except Exception as e:
             st.error(f"❌ Lỗi kết nối Google Sheets: {e}")
 
 
