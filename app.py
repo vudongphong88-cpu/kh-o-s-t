@@ -36,7 +36,7 @@ if nut_gui:
             "Sở thích": so_thich
         }])
         
-         try:
+    try:
             # Đọc và cập nhật dữ liệu tự động không cần dán link vào code
             df_cu = conn.read(ttl=0)
             df_cap_nhat = pd.concat([df_cu, data_moi], ignore_index=True)
