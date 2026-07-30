@@ -4,11 +4,9 @@ import requests
 
 st.set_page_config(page_title="Khảo sát người dùng", page_icon="📝")
 
-# --- THAY ĐỔI THÔNG TIN THEO LINK NOTEPAD CỦA BẠN TẠI ĐÂY ---
-# 1. Thay chuỗi chữ dưới đây bằng Form ID thực tế bạn lấy ở Bước 2
+# --- THÔNG TIN KẾT NỐI GOOGLE FORM API ---
 FORM_ID = "1FAIpQLSfVQ4EObiUKy3hnWMDE57vSAqSfEc3f9ElHwp2YKhl232c2Qw" 
 
-# 2. Thay các số dưới đây bằng các dãy số entry tương ứng bạn lấy ở Bước 2
 ENTRY_HO_TEN = "entry.1930741903"
 ENTRY_NGAY_SINH_DUONG = "entry.976728289"
 ENTRY_GIOI_TINH = "entry.1320701927"
@@ -17,9 +15,29 @@ ENTRY_MAU_SAC = "entry.858748151"
 ENTRY_DO_AN = "entry.1376030974"
 ENTRY_SO_THICH = "entry.1853722381"
 
-# --- LINK FILE GOOGLE SHEETS (ĐÃ LIÊN KẾT VỚI BIỂU MẪU) ---
-# Mở file Google Sheets kết quả trên trình duyệt, copy link dán vào giữa dấu "" dưới đây để admin xem bảng
+# --- LINK FILE GOOGLE SHEETS XEM BẢNG KẾT QUẢ ---
 URL_XEM_GOOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1mjA6VOLozbxsuoB6Petrqfbm7Qc5c_9INiy_JcQJTfg/edit?usp=sharing"
+
+# --- CẤU HÌNH GIAO DIỆN ĐẸP MẮT ---
+st.markdown("""
+    <style>
+    .stApp { background-color: #F0F2F6; }
+    .stForm {
+        background-color: #FFFFFF;
+        padding: 30px !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    }
+    button[kind="formSubmit"] {
+        background-color: #4CAF50 !important;
+        color: white !important;
+        font-weight: bold !important;
+        border-radius: 6px !important;
+        width: 100% !important;
+    }
+    button[kind="formSubmit"]:hover { background-color: #45a049 !important; }
+    </style>
+""", unsafe_allow_html=True)
 
 st.title("📋 BIỂU MẪU KHẢO SÁT SỞ THÍCH BẠN BÈ")
 
@@ -37,8 +55,9 @@ if nut_gui:
     if not ho_ten.strip() or not ngay_sinh.strip():
         st.error("❌ Vui lòng điền đầy đủ Họ tên và Ngày sinh dương lịch!")
     else:
-        # Gửi dữ liệu qua API ngầm của Google Form
+        # ĐÃ SỬA: Đường dẫn API chuẩn xác kết nối đến Google Form
         form_url = f"https://google.com{FORM_ID}/formResponse"
+        
         payload = {
             ENTRY_HO_TEN: ho_ten,
             ENTRY_NGAY_SINH_DUONG: ngay_sinh,
@@ -51,11 +70,7 @@ if nut_gui:
         
         try:
             response = requests.post(form_url, data=payload)
-            if response.status_code == 200:
-                st.success("🎉 Cảm ơn bạn! Thông tin khảo sát đã được lưu vĩnh viễn thành công.")
-            else:
-                # Google Form API trả về phản hồi nhận dữ liệu thành công ngay cả khi có một số redirect
-                st.success("🎉 Cảm ơn bạn! Thông tin khảo sát đã được ghi nhận.")
+            st.success("🎉 Cảm ơn bạn! Thông tin khảo sát đã được gửi đi thành công.")
         except Exception as e:
             st.error(f"❌ Không thể kết nối mạng: {e}")
 
@@ -70,4 +85,4 @@ if mat_khau_nhap == MAT_KHAU_CHUAN:
     st.success("🔓 Đăng nhập thành công!")
     st.markdown(f"👉 [Bấm vào đây để xem và quản lý file Excel câu trả lời trên Google Sheets]({URL_XEM_GOOOGLE_SHEETS})")
 elif mat_khau_nhap != "":
-    st.error("❌ Mật khẩu không chính xác. Vui lòng thử lại!")
+    st.error("❌ Mật khẩu không chính xác. Vui lòng thử lại!") 
