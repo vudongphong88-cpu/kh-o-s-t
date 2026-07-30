@@ -1,13 +1,8 @@
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
 import pandas as pd
-import os
 
 st.set_page_config(page_title="Khảo sát người dùng", page_icon="📝")
-
-# DÁN ĐƯỜNG LINK GOOGLE SHEETS CỦA BẠN VÀO GIỮA HAI DẤU NGOẶC KÉP Ở DÒNG DƯỚI ĐÂY:
-URL_GOOGLE_SHEETS = "https://docs.google.com/spreadsheets/d/1Tid-kaoP-g36d3mdCtJqRpp_miaNLfHD5syZSqyfjwk/edit?usp=sharing"
-
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
 except Exception:
@@ -41,16 +36,15 @@ if nut_gui:
             "Sở thích": so_thich
         }])
         
-        try:
-            # Đọc dữ liệu cũ đang có trên Google Sheets
-            df_cu = conn.read(spreadsheet=URL_GOOGLE_SHEETS, ttl=0)
-            # Gộp dữ liệu cũ và dữ liệu mới lại với nhau
+         try:
+            # Đọc và cập nhật dữ liệu tự động không cần dán link vào code
+            df_cu = conn.read(ttl=0)
             df_cap_nhat = pd.concat([df_cu, data_moi], ignore_index=True)
-            # Ghi đè bảng dữ liệu mới ngược trở lại Google Sheets vĩnh viễn
-            conn.update(spreadsheet=URL_GOOGLE_SHEETS, data=df_cap_nhat)
+            conn.update(data=df_cap_nhat)
             st.success("🎉 Cảm ơn bạn! Thông tin khảo sát đã được lưu vĩnh viễn vào Google Sheets.")
         except Exception as e:
-            st.error(f"❌ Lỗi kết nối Google Sheets: {e}. Vui lòng kiểm tra lại quyền chỉnh sửa của link.")
+            st.error(f"❌ Lỗi kết nối Google Sheets: {e}")
+
 
 # --- PHẦN BẢO MẬT: TRANG QUẢN TRỊ DÀNH RIÊNG CHO BẠN ---
 st.write("---")
